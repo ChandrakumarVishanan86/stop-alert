@@ -68,6 +68,7 @@ stop-alert/
 3. Open http://localhost/phpmyadmin, go to the *Import* tab on the home page, choose database.sql and click *Import*. This creates the stop_alert database with tables and sample data.
 4. Open *http://localhost/stop-alert/* in your browser
 
+
 > Do not double-click index.html. PHP only works through http://localhost/....
 
 *Configuration:* if your tables are in another database, or your MySQL root has a password, edit config.php:
