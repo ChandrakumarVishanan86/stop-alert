@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#07121d">
+<title>Stop Alert - Sri Lanka Bus Wake-Up</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ============ LEFT PANEL ============ -->
+  <aside class="panel" id="panel">
+
+    <header class="brand">
+      <div class="logo" aria-hidden="true">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#04222a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="13" rx="3"/><path d="M3 11h18M7 17v2.5M17 17v2.5"/><circle cx="7.5" cy="14" r=".7"/><circle cx="16.5" cy="14" r=".7"/></svg>
+      </div>
+      <div class="grow">
+        <h1>Stop Alert</h1>
+        <p>Sleep easy. We wake you before your stop.</p>
+      </div>
+      <button id="btnHistory" class="icon-btn" title="Trip history" aria-label="Trip history">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      </button>
+    </header>
+
+    <!-- SETUP VIEW -->
+    <section id="viewSetup">
+      <div class="step"><span class="num">1</span>Choose your route</div>
+      <div id="routes" class="routes"><p class="empty">Loading routes...</p></div>
+
+      <div class="step"><span class="num">2</span>Get off at</div>
+      <ul id="stops" class="timeline"><li class="placeholder">Select a route first.</li></ul>
+
+      <div class="step"><span class="num">3</span>Alert me when I am within</div>
+      <div class="chips" id="distChips"></div>
+
+      <div class="step"><span class="num">4</span>How to track</div>
+      <div class="seg" id="modeSeg">
+        <button type="button" data-mode="live" class="on">Live GPS</button>
+        <button type="button" data-mode="demo">Demo ride</button>
+      </div>
+      <div class="seg small" id="speedSeg" hidden></div>
+      <p class="hint" id="modeHint"></p>
+
+      <button id="btnStart" class="btn primary" disabled>Start trip</button>
+      <button id="btnTest" class="btn ghost">Test alarm sound and vibration</button>
+    </section>
+
+    <!-- TRACKING VIEW -->
+    <section id="viewTrack" hidden>
+      <div class="trip-card">
+        <div class="trip-top">
+          <span class="pill" id="modePill">LIVE GPS</span>
+          <span class="gps" id="gpsStat">Waiting for GPS...</span>
+        </div>
+        <div class="label">Getting off at</div>
+        <h2 id="tDest">-</h2>
+        <div class="big" id="tDist">--</div>
+        <div class="sub">away &middot; <span id="tEta">ETA --</span></div>
+        <div class="bar"><i id="tBar"></i></div>
+        <div class="row">
+          <span>Alarm at <b id="tAlertAt">-</b></span>
+          <span id="tNear" class="muted"></span>
+        </div>
+      </div>
+      <button id="btnStop" class="btn danger">End trip</button>
+      <p class="hint">Keep this screen on. The alarm rings with sound and vibration when you are close to your stop.</p>
+    </section>
+
+    <footer class="foot">Built by <b>Chandrakumar Vishanan</b> &middot; Demo data, verify stop locations before real use</footer>
+  </aside>
+
+  <!-- ============ MAP ============ -->
+  <main class="mapwrap">
+    <div id="map" aria-label="Sri Lanka map"></div>
+    <div class="map-tools">
+      <button id="btnLocate" class="tool" title="My location" aria-label="My location">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+      </button>
+      <button id="btnStyle" class="tool" title="Map style" aria-label="Map style">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 8l10 5 10-5-10-5Z"/><path d="m2 13 10 5 10-5"/></svg>
+      </button>
+    </div>
+    <div class="legend">
+      <span><i class="d user"></i>You</span>
+      <span><i class="d dest"></i>Your stop</span>
+      <span><i class="d stop"></i>Bus stop</span>
+    </div>
+  </main>
+</div>
+
+<!-- ============ ALARM ============ -->
+<div id="alarm" class="alarm" hidden role="alertdialog" aria-live="assertive">
+  <div class="rings">
+    <i></i><i></i><i></i>
+    <div class="bell">
+      <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="#a3121f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>
+    </div>
+  </div>
+  <h2>Wake up!</h2>
+  <p id="alarmText" class="alarm-stop">Your stop is coming up</p>
+  <p id="alarmDist" class="alarm-dist"></p>
+  <button id="btnDismiss" class="btn light">I am awake</button>
+</div>
+
+<!-- ============ HISTORY ============ -->
+<div id="modal" class="modal" hidden>
+  <div class="sheet">
+    <div class="sheet-head"><h3>Recent trips</h3><button id="btnCloseModal" class="icon-btn" aria-label="Close">&times;</button></div>
+    <div id="historyList" class="history"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast" hidden></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
